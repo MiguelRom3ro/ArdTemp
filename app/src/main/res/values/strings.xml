@@ -3,4 +3,8 @@
     <string name="title">Temperatura</string>
     <string name="example_temperature">30°</string>
     <string name="example_datetime">21/02/2024 14:42:15</string>
+    <string name="filter_by">Filtrar por:</string>
+    <string name="higher_to_lower">Mayor a menor</string>
+    <string name="lower_to_higher">Menor a mayor</string>
+    <string name="day">Dia</string>
 </resources>

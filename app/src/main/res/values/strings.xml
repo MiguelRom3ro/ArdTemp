@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">ArdTemp</string>
     <string name="title">Temperatura</string>
+    <string name="example_temperature">30°</string>
+    <string name="example_datetime">21/02/2024 14:42:15</string>
 </resources>

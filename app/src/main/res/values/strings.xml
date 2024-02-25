@@ -7,4 +7,10 @@
     <string name="higher_to_lower">Mayor a menor</string>
     <string name="lower_to_higher">Menor a mayor</string>
     <string name="day">Dia</string>
+    <string name="format_date">DD/MM/YYYY</string>
+    <string name="filter_by_day">Filtrar por dia:</string>
+    <string name="search_by_day">Buscar por dia:</string>
+    <string name="search">Buscar</string>
+    <string name="time">Tiempo</string>
+    <string name="select_date">selecciona una fecha</string>
 </resources>

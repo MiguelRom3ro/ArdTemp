@@ -13,4 +13,7 @@
     <string name="search">Buscar</string>
     <string name="time">Tiempo</string>
     <string name="select_date">selecciona una fecha</string>
+    <string name="must_select_date">Seleccione una fecha</string>
+    <string name="must_select_option">Seleccione una opcion de filtrado</string>
+    <string name="no_filter">No filtrar</string>
 </resources>

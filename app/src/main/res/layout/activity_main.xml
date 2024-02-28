@@ -98,31 +98,47 @@
                 android:id="@+id/radio_button_1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/higher_to_lower"
-                android:textSize="14sp"/>
+                android:text="@string/lower_to_higher"
+                android:textSize="14sp"
+                android:checked="true"/>
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/radio_button_2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/lower_to_higher"
+                android:text="@string/higher_to_lower"
                 android:textSize="14sp"/>
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/radio_button_3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/time"
+                android:text="@string/no_filter"
                 android:textSize="14sp"/>
 
         </RadioGroup>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_search"
             android:layout_width="260dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/common_min_padding"
             android:layout_gravity="center"
             android:text="@string/search"/>
+
+        <TextView
+            android:id="@+id/tv_prueba"
+            android:layout_marginTop="@dimen/common_middle_padding"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_temperatures"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/common_middle_padding"/>
 
     </LinearLayout>
 

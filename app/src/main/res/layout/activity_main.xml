@@ -126,14 +126,6 @@
             android:layout_gravity="center"
             android:text="@string/search"/>
 
-        <TextView
-            android:id="@+id/tv_prueba"
-            android:layout_marginTop="@dimen/common_middle_padding"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"/>
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_temperatures"
             android:layout_width="match_parent"

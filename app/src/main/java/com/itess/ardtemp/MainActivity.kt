@@ -9,15 +9,12 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.itess.ardtemp.adapter.TemperatureViewAdapter
 import com.itess.ardtemp.databinding.ActivityMainBinding
-import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.IOException
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
@@ -25,23 +22,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var radioButton1 : RadioButton? = null
     private var radioButton2 : RadioButton? = null
+    private val dataTemperatures = mutableListOf<Temperature>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         radioButton1 = binding.radioButton1
         radioButton2 = binding.radioButton2
 
-
         binding.switchFbd.setOnCheckedChangeListener { _, b ->
-            if(b){
-                binding.tilDate.visibility = View.VISIBLE
-            }else{
-                binding.tilDate.visibility = View.GONE
-            }
+            showOrGoneSwitch(b)
         }
 
         binding.btnSearch.setOnClickListener {
@@ -51,6 +43,19 @@ class MainActivity : AppCompatActivity() {
         binding.tietDate.setOnClickListener{
             selectDate()
         }
+    }
+
+    private fun showOrGoneSwitch(b : Boolean){
+        if(b){
+            binding.tilDate.visibility = View.VISIBLE
+        }else{
+            binding.tilDate.visibility = View.GONE
+        }
+    }
+
+    private fun initRecyclerView() {
+        binding.rvTemperatures.layoutManager = LinearLayoutManager(binding.rvTemperatures.context, LinearLayoutManager.VERTICAL, false)
+        binding.rvTemperatures.adapter = TemperatureViewAdapter(dataTemperatures)
     }
 
     private fun selectDate(){
@@ -77,10 +82,10 @@ class MainActivity : AppCompatActivity() {
     private fun searchTemperature(){
         if(binding.switchFbd.isChecked){
             if(validateSelectDate()){
-                apiRequest(true)
+                request(true)
             }
         }else{
-            apiRequest(false)
+            request(false)
         }
     }
 
@@ -94,102 +99,56 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getRetrofit() : Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://arduinotomobile.000webhostapp.com/php/getData.php/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun apiRequest(withDate : Boolean) {
-        val url: String
-        var optionRG = 0
-        if (radioButton1?.isChecked == true) {
-            optionRG = 1
-        } else if (radioButton2?.isChecked == true) {
-            optionRG = 2
-        }
-
-        url = if (withDate) {
-            val fecha = binding.tilDate.hint.toString()
-            if (optionRG == 0) {
-                "https://arduinotomobile.000webhostapp.com/php/getData.php?date=$fecha"
-            } else {
-                "https://arduinotomobile.000webhostapp.com/php/getData.php?date=$fecha&filter=$optionRG"
-            }
-        } else {
-            if (optionRG == 0) {
-                "https://arduinotomobile.000webhostapp.com/php/getData.php"
-            } else {
-                "https://arduinotomobile.000webhostapp.com/php/getData.php?filter=$optionRG"
-            }
-        }
-
-        GlobalScope.launch(Dispatchers.IO) {
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .url(url)
-                .build()
-
-            val dataList = mutableListOf<Temperature>()
-
-            try {
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val responseData = response.body?.string()
-                    if (!responseData.isNullOrEmpty()) {
-                        if (responseData.startsWith("{")) {
-                            // El servidor devolvió un objeto JSON en lugar de un arreglo
-                            val jsonObject = JSONObject(responseData)
-                            if (jsonObject.has("mensaje")) {
-                                val message = jsonObject.getString("mensaje")
-                                println("Mensaje del servidor: $message")
-                                // Aquí puedes mostrar el mensaje en la interfaz de usuario si lo deseas
-                            } else {
-                                println("Error: El servidor devolvió un objeto JSON inesperado")
-                            }
-                        } else if (responseData.startsWith("[")) {
-                            // El servidor devolvió un arreglo JSON
-                            val jsonArray = JSONArray(responseData)
-                            for (i in 0 until jsonArray.length()) {
-                                val jsonObject = jsonArray.getJSONObject(i)
-                                val temperature = jsonObject.getString("temperature").toInt()
-                                val date = jsonObject.getString("date")
-                                val time = jsonObject.getString("time")
-                                val temperatureData = Temperature(temperature, date, time)
-                                dataList.add(temperatureData)
-                            }
-                        } else {
-                            println("Error: Respuesta del servidor no es JSON válido")
-                        }
+    private fun request(withDate : Boolean){
+        val query = getQuery(withDate)
+        CoroutineScope(Dispatchers.IO).launch {
+            val call : Response<List<Temperature>> = getRetrofit().create(APIService::class.java).getTemperature(query)
+            val temperatures : List<Temperature>? = call.body()
+            runOnUiThread{
+                if(call.isSuccessful){
+                    val listTemperatures : List<Temperature> = temperatures ?: emptyList()
+                    dataTemperatures.clear()
+                    dataTemperatures.addAll(listTemperatures)
+                    if(dataTemperatures.isNotEmpty()){
+                        initRecyclerView()
+                    }else{
+                        notDataFound()
                     }
-                } else {
-                    println("Error en la solicitud: ${response.code}")
+                }else{
+                    showError()
                 }
-            } catch (e: IOException) {
-                println("Error al hacer la solicitud: ${e.message}")
-            }
-
-            GlobalScope.launch(Dispatchers.Main) {
-                showInfo(dataList)
             }
         }
     }
 
-    private fun showInfo(dataList: List<Temperature>){
-        if (dataList.isEmpty()) {
-
-            if(binding.rvTemperatures.visibility == View.VISIBLE){
-                binding.rvTemperatures.visibility = View.GONE
-                binding.tvPrueba.visibility = View.VISIBLE
-            }
-            // Mostrar mensaje de que no hay datos
-            "No hay datos disponibles".also { binding.tvPrueba.text = it }
-
-        } else {
-
-            if(binding.rvTemperatures.visibility == View.GONE){
-                binding.rvTemperatures.visibility = View.VISIBLE
-                binding.tvPrueba.visibility = View.GONE
-            }
-            binding.rvTemperatures.layoutManager = LinearLayoutManager(binding.rvTemperatures.context, LinearLayoutManager.VERTICAL, false)
-            binding.rvTemperatures.adapter = TemperatureViewAdapter(dataList)
-
+    private fun getQuery(withDate: Boolean) : String{
+        var query = "?"
+        if(radioButton1?.isChecked == true){
+            query += "filter=1"
+        }else if(radioButton2?.isChecked == true){
+            query += "filter=2"
         }
+        if(withDate){
+            val date = binding.tilDate.hint.toString()
+            query += "&date=$date"
+        }
+        return query
     }
+
+    private fun notDataFound() {
+        initRecyclerView()
+        Toast.makeText(this, "Datos no encontrados", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showError() {
+        Toast.makeText(this, "Ah ocurrido un error", Toast.LENGTH_SHORT).show()
+    }
+
 }

@@ -40,13 +40,20 @@ android {
 
 dependencies {
 
-    implementation ("com.github.bumptech.glide:glide:4.16.0")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation ("com.github.bumptech.glide:glide:4.16.0") //Cargar imagenes y mostrarlas en la app, administrar la cache de las imagenes
+    implementation("com.google.code.gson:gson:2.10")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //Corroutinas
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
